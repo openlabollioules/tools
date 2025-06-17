@@ -45,10 +45,10 @@ class HelpFunctions:
         
         self.slide_layouts = {
             "title_and_content": 1,
-            "title_with_a_image":2,
-            "abstract": 3,
-            "chapter_title": 4,
-            "basic_content": 5,
+            "abstract": 2,
+            "chapter_title": 3,
+            "basic_content": 4,
+            "final_slide": 12,
         }
 
     def remove_tags_no_keep(self, text : str, start : str, end : str) -> str:
@@ -70,6 +70,7 @@ class HelpFunctions:
             Text with tags removed
         """
         return re.sub(r'{}.*?{}'.format(start, end), '', text, flags=re.DOTALL).strip()
+    
     def SubElement(self, parent, tagname, **kwargs):
         """
         Helper for Paragraph bullet Point
@@ -277,7 +278,13 @@ class HelpFunctions:
             else:
                 p.text = '   '*spacing + line
 
-    
+    def add_final_slide(self, prs: Presentation, title: str = "Title", content: str = "Content") -> None:
+        """
+        Adds a final slide to the presentation.
+        """
+        slide_layout = prs.slide_layouts[self.slide_layouts["final_slide"]]
+        slide = prs.slides.add_slide(slide_layout)
+        
 
 
     
@@ -287,16 +294,22 @@ class Tools:
         """faire le truc avec le JSON """
         self.FILES_DIR = "./tmp"
         self.API_BASE_URL = "http://localhost:8080/api/v1/files/"
-        self.template_path = "./templates/template.pptx"
+        # templates paths
+        self.base_template_path = "./templates/"
+        
+
+        self.prefix= "CS-"
         os.makedirs(self.FILES_DIR, exist_ok=True)
         self.help_functions = HelpFunctions()
         self.event_emitter = EventEmitter()
     
-    async def generate_pptx_from_json(self,json_data : dict,__request__: Request, __event_emitter__: Callable[[dict], Any] = None, __user__=None):
+    async def generate_pptx_from_json(self,language: str,confidentiality: str,json_data : dict,__request__: Request, __event_emitter__: Callable[[dict], Any] = None, __user__=None):
         """
         Generate a PowerPoint presentation from a JSON file.
         
         Args:
+            language : The language of the presentation. (fr or en)
+            confidentiality : The confidentiality of the presentation.  
             json_data : The JSON data to generate the presentation from.
             __user__ : The user to upload the file to.
         Returns:
@@ -336,11 +349,29 @@ class Tools:
 
         # Load JSON data        
         print("[DEBUG] json_formatted", json_data)
-        
+        print("[DEBUG] language", language)
+        print("[DEBUG] confidentiality", confidentiality)
+        if confidentiality == "public":
+            self.prefix = "CS-PU-"
+        elif confidentiality == "internal":
+            self.prefix = "CS-IN-"
+        else:
+            self.prefix = "CS-CO-"
+
         # Create presentation
-        prs = Presentation(self.template_path)
+        if language == "fr" or language == "french":
+            # generating the template path french
+            template_path = self.base_template_path + "fr/" + self.prefix + "template_fr.pptx"
+            print("[DEBUG] french template path", template_path)
+            prs = Presentation(template_path)
+        else:
+            # generating the template path english
+            template_path = self.base_template_path + "en/" + self.prefix + "template_en.pptx"
+            print("[DEBUG] english template path", template_path)
+            prs = Presentation(template_path)
+
+
         print("[DEBUG] prs", prs)
-        
         # Add title slide
         self.help_functions.add_title_slide(prs, title=json_data['titre'])
         print("[DEBUG] title slide added")
@@ -356,6 +387,9 @@ class Tools:
                 elif slide['type'] == "contenu":
                     self.help_functions.add_content_slide(prs, title=slide['titre'], content=slide['contenu'])
                     print("[DEBUG] content slide added")
+            # add the final slide at the end of the presentation
+            self.help_functions.add_final_slide(prs, title=json_data['titre'], content=json_data['conclusion'])
+
             await emitter.emit(
                 status="complete",
                 description=f"PPTX generation completed",
@@ -376,7 +410,7 @@ class Tools:
         # remove all spaces
         json_data['titre'] = json_data['titre'].replace(' ', '_')
 
-        output_path = self.FILES_DIR + '/' + json_data['titre'] + '.pptx'
+        output_path = self.FILES_DIR + '/' + self.prefix + json_data['titre'] + '.pptx'
         prs.save(output_path)
         print("[DEBUG] output_path", output_path)
 
