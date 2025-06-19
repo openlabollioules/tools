@@ -26,31 +26,94 @@ class SlideTemplateAnalyzer:
         
     def get_shape_type_name(self, shape_type):
         """Convertit le type de shape en nom lisible"""
-        shape_types = {
-            MSO_SHAPE_TYPE.AUTO_SHAPE: "AUTO_SHAPE",
-            MSO_SHAPE_TYPE.CALLOUT: "CALLOUT",
-            MSO_SHAPE_TYPE.CHART: "CHART",
-            MSO_SHAPE_TYPE.COMMENT: "COMMENT",
-            MSO_SHAPE_TYPE.CONNECTOR: "CONNECTOR",
-            MSO_SHAPE_TYPE.EMBEDDED_OLE_OBJECT: "EMBEDDED_OLE_OBJECT",
-            MSO_SHAPE_TYPE.FORM_CONTROL: "FORM_CONTROL",
-            MSO_SHAPE_TYPE.FREEFORM: "FREEFORM",
-            MSO_SHAPE_TYPE.GROUP: "GROUP",
-            MSO_SHAPE_TYPE.IGX_GRAPHIC: "IGX_GRAPHIC",
-            MSO_SHAPE_TYPE.LINKED_OLE_OBJECT: "LINKED_OLE_OBJECT",
-            MSO_SHAPE_TYPE.LINKED_PICTURE: "LINKED_PICTURE",
-            MSO_SHAPE_TYPE.MEDIA: "MEDIA",
-            MSO_SHAPE_TYPE.OLE_CONTROL_OBJECT: "OLE_CONTROL_OBJECT",
-            MSO_SHAPE_TYPE.PICTURE: "PICTURE",
-            MSO_SHAPE_TYPE.PLACEHOLDER: "PLACEHOLDER",
-            MSO_SHAPE_TYPE.SCRIPT_ANCHOR: "SCRIPT_ANCHOR",
-            MSO_SHAPE_TYPE.SHAPE_TYPE_MIXED: "SHAPE_TYPE_MIXED",
-            MSO_SHAPE_TYPE.TABLE: "TABLE",
-            MSO_SHAPE_TYPE.TEXT_EFFECT: "TEXT_EFFECT",
-            MSO_SHAPE_TYPE.TEXT_BOX: "TEXT_BOX",
-            MSO_SHAPE_TYPE.WEB_VIDEO: "WEB_VIDEO"
-        }
-        return shape_types.get(shape_type, f"UNKNOWN_{shape_type}")
+        try:
+            # Essayer d'abord les types les plus communs
+            common_types = {
+                1: "AUTO_SHAPE",
+                2: "CALLOUT", 
+                3: "CHART",
+                4: "COMMENT",
+                5: "CONNECTOR",
+                7: "EMBEDDED_OLE_OBJECT",
+                8: "FORM_CONTROL",
+                9: "FREEFORM",
+                10: "GROUP",
+                11: "IGX_GRAPHIC",
+                12: "LINKED_OLE_OBJECT",
+                13: "LINKED_PICTURE",
+                14: "MEDIA",
+                15: "OLE_CONTROL_OBJECT",
+                16: "PICTURE",
+                17: "PLACEHOLDER",
+                18: "SCRIPT_ANCHOR",
+                19: "SHAPE_TYPE_MIXED",
+                20: "TABLE",
+                21: "TEXT_EFFECT",
+                22: "TEXT_BOX",
+                23: "WEB_VIDEO"
+            }
+            
+            # Si le type est un entier, utiliser le mapping direct
+            if isinstance(shape_type, int):
+                return common_types.get(shape_type, f"UNKNOWN_TYPE_{shape_type}")
+            
+            # Sinon, essayer d'utiliser l'énumération
+            shape_types = {}
+            
+            # Ajouter seulement les types qui existent dans cette version de python-pptx
+            try:
+                shape_types[MSO_SHAPE_TYPE.AUTO_SHAPE] = "AUTO_SHAPE"
+            except AttributeError:
+                pass
+            try:
+                shape_types[MSO_SHAPE_TYPE.CALLOUT] = "CALLOUT"
+            except AttributeError:
+                pass
+            try:
+                shape_types[MSO_SHAPE_TYPE.CHART] = "CHART"
+            except AttributeError:
+                pass
+            try:
+                shape_types[MSO_SHAPE_TYPE.COMMENT] = "COMMENT"
+            except AttributeError:
+                pass
+            try:
+                shape_types[MSO_SHAPE_TYPE.EMBEDDED_OLE_OBJECT] = "EMBEDDED_OLE_OBJECT"
+            except AttributeError:
+                pass
+            try:
+                shape_types[MSO_SHAPE_TYPE.FORM_CONTROL] = "FORM_CONTROL"
+            except AttributeError:
+                pass
+            try:
+                shape_types[MSO_SHAPE_TYPE.FREEFORM] = "FREEFORM"
+            except AttributeError:
+                pass
+            try:
+                shape_types[MSO_SHAPE_TYPE.GROUP] = "GROUP"
+            except AttributeError:
+                pass
+            try:
+                shape_types[MSO_SHAPE_TYPE.PICTURE] = "PICTURE"
+            except AttributeError:
+                pass
+            try:
+                shape_types[MSO_SHAPE_TYPE.PLACEHOLDER] = "PLACEHOLDER"
+            except AttributeError:
+                pass
+            try:
+                shape_types[MSO_SHAPE_TYPE.TABLE] = "TABLE"
+            except AttributeError:
+                pass
+            try:
+                shape_types[MSO_SHAPE_TYPE.TEXT_BOX] = "TEXT_BOX"
+            except AttributeError:
+                pass
+                
+            return shape_types.get(shape_type, f"UNKNOWN_ENUM_{shape_type}")
+            
+        except Exception as e:
+            return f"ERROR_GETTING_TYPE_{shape_type}"
     
     def get_placeholder_type_name(self, placeholder_type):
         """Convertit le type de placeholder en nom lisible"""
@@ -80,31 +143,73 @@ class SlideTemplateAnalyzer:
     
     def analyze_shape(self, shape, shape_index):
         """Analyse un shape spécifique"""
-        shape_info = {
-            "index": shape_index,
-            "name": getattr(shape, 'name', 'No name'),
-            "type": self.get_shape_type_name(shape.shape_type),
-            "has_text_frame": hasattr(shape, 'text_frame') and shape.text_frame is not None,
-            "is_placeholder": shape.is_placeholder if hasattr(shape, 'is_placeholder') else False,
-            "width": shape.width.inches if hasattr(shape, 'width') else 'N/A',
-            "height": shape.height.inches if hasattr(shape, 'height') else 'N/A',
-            "left": shape.left.inches if hasattr(shape, 'left') else 'N/A',
-            "top": shape.top.inches if hasattr(shape, 'top') else 'N/A'
-        }
-        
-        # Informations sur le placeholder
-        if shape_info["is_placeholder"]:
-            placeholder = shape.placeholder_format
-            shape_info["placeholder_type"] = self.get_placeholder_type_name(placeholder.type)
-            shape_info["placeholder_idx"] = placeholder.idx
-        
-        # Informations sur le texte
-        if shape_info["has_text_frame"]:
-            text_frame = shape.text_frame
-            shape_info["text_content"] = text_frame.text if text_frame.text else "Empty"
-            shape_info["paragraphs_count"] = len(text_frame.paragraphs)
+        try:
+            shape_info = {
+                "index": shape_index,
+                "name": getattr(shape, 'name', 'No name'),
+                "type": "UNKNOWN",
+                "has_text_frame": hasattr(shape, 'text_frame') and shape.text_frame is not None,
+                "is_placeholder": shape.is_placeholder if hasattr(shape, 'is_placeholder') else False,
+                "width": 'N/A',
+                "height": 'N/A',
+                "left": 'N/A',
+                "top": 'N/A'
+            }
             
-        return shape_info
+            # Essayer d'obtenir le type de shape
+            try:
+                shape_info["type"] = self.get_shape_type_name(shape.shape_type)
+            except Exception as e:
+                shape_info["type"] = f"ERROR_TYPE_{e}"
+            
+            # Essayer d'obtenir les dimensions
+            try:
+                if hasattr(shape, 'width'):
+                    shape_info["width"] = shape.width.inches
+                if hasattr(shape, 'height'):
+                    shape_info["height"] = shape.height.inches
+                if hasattr(shape, 'left'):
+                    shape_info["left"] = shape.left.inches
+                if hasattr(shape, 'top'):
+                    shape_info["top"] = shape.top.inches
+            except Exception as e:
+                print(f"[DEBUG] Erreur dimensions pour shape {shape_index}: {e}")
+            
+            # Informations sur le placeholder
+            if shape_info["is_placeholder"]:
+                try:
+                    placeholder = shape.placeholder_format
+                    shape_info["placeholder_type"] = self.get_placeholder_type_name(placeholder.type)
+                    shape_info["placeholder_idx"] = placeholder.idx
+                except Exception as e:
+                    shape_info["placeholder_type"] = f"ERROR_PLACEHOLDER_{e}"
+                    shape_info["placeholder_idx"] = "N/A"
+            
+            # Informations sur le texte
+            if shape_info["has_text_frame"]:
+                try:
+                    text_frame = shape.text_frame
+                    shape_info["text_content"] = text_frame.text if text_frame.text else "Empty"
+                    shape_info["paragraphs_count"] = len(text_frame.paragraphs)
+                except Exception as e:
+                    shape_info["text_content"] = f"ERROR_TEXT_{e}"
+                    shape_info["paragraphs_count"] = 0
+                
+            return shape_info
+            
+        except Exception as e:
+            return {
+                "index": shape_index,
+                "name": "ERROR_ANALYZING_SHAPE",
+                "type": f"ERROR_{e}",
+                "error": str(e),
+                "has_text_frame": False,
+                "is_placeholder": False,
+                "width": 'N/A',
+                "height": 'N/A',
+                "left": 'N/A',
+                "top": 'N/A'
+            }
     
     def analyze_slide_layout(self, layout, layout_index):
         """Analyse un layout de slide"""
@@ -228,6 +333,26 @@ class SlideTemplateAnalyzer:
                 self.print_analysis(template_info)
                 self.generate_code_suggestions(template_info)
 
+def test_single_template():
+    """Fonction pour tester un seul template (pour debug)"""
+    analyzer = SlideTemplateAnalyzer()
+    
+    # Tester avec un template spécifique - remplacez le chemin selon vos besoins
+    test_paths = [
+        "./templates/fr/CS-PU-template_fr.pptx",
+        "./templates/en/CS-PU-template_en.pptx"
+    ]
+    
+    for test_path in test_paths:
+        if os.path.exists(test_path):
+            print(f"\n🧪 TEST D'UN SEUL TEMPLATE: {test_path}")
+            template_info = analyzer.analyze_template(test_path)
+            analyzer.print_analysis(template_info)
+            analyzer.generate_code_suggestions(template_info)
+            break
+    else:
+        print("❌ Aucun template de test trouvé. Vérifiez les chemins.")
+
 def main():
     """Fonction principale pour lancer l'analyse"""
     analyzer = SlideTemplateAnalyzer()
@@ -240,8 +365,11 @@ def main():
         print("📁 Veuillez créer le dossier et y placer vos fichiers .pptx")
         return
     
-    # Analyser tous les templates
-    analyzer.analyze_all_templates()
+    # Option 1: Analyser tous les templates
+    # analyzer.analyze_all_templates()
+    
+    # Option 2: Tester un seul template (pour debug)
+    test_single_template()
     
     print("\n✅ Analyse terminée!")
     print("\n💡 Utilisez les suggestions de code ci-dessus pour implémenter vos méthodes.")

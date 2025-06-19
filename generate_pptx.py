@@ -12,6 +12,7 @@ from pathlib import Path
 from fastapi import UploadFile
 import re
 import json
+from datetime import datetime
 from pptx import Presentation
 from pptx.oxml.xmlchemy import OxmlElement
 from pptx.util import Inches
@@ -48,7 +49,8 @@ class HelpFunctions:
             "abstract": 2,
             "chapter_title": 3,
             "basic_content": 4,
-            "final_slide": 12,
+            "final_slide_fr": 12,
+            "final_slide_en": 13,
         }
 
     def remove_tags_no_keep(self, text : str, start : str, end : str) -> str:
@@ -165,7 +167,7 @@ class HelpFunctions:
             return file_item
 
 
-    def add_title_slide(self, prs: Presentation, title: str ="Title") -> None:
+    def add_title_slide(self, prs: Presentation, title: str ="Title", author: str = "author") -> None:
         """
         Creates and adds a new title slide to the given PowerPoint presentation.
 
@@ -189,6 +191,12 @@ class HelpFunctions:
 
         # fill in the content
         slide.shapes[0].text = title
+        # add the author
+        slide.shapes[1].text = author
+        # add the date
+        slide.shapes[3].text = datetime.now().strftime("%d/%m/%Y")
+        
+
 
     def add_chapter_slide(
         self,
@@ -278,11 +286,14 @@ class HelpFunctions:
             else:
                 p.text = '   '*spacing + line
 
-    def add_final_slide(self, prs: Presentation, title: str = "Title", content: str = "Content") -> None:
+    def add_final_slide(self, prs: Presentation, language: str) -> None:
         """
         Adds a final slide to the presentation.
         """
-        slide_layout = prs.slide_layouts[self.slide_layouts["final_slide"]]
+        if language == "fr":
+            slide_layout = prs.slide_layouts[self.slide_layouts["final_slide_fr"]]
+        else:
+            slide_layout = prs.slide_layouts[self.slide_layouts["final_slide_en"]]
         slide = prs.slides.add_slide(slide_layout)
         
 
@@ -373,9 +384,10 @@ class Tools:
 
         print("[DEBUG] prs", prs)
         # Add title slide
-        self.help_functions.add_title_slide(prs, title=json_data['titre'])
+        self.help_functions.add_title_slide(prs, title=json_data['titre'], author=__user__['name'])
         print("[DEBUG] title slide added")
-        
+        print("[DEBUG] user", __user__)
+
         # Add content slides
         try:
             await emitter.emit("Creating slides")
@@ -388,7 +400,7 @@ class Tools:
                     self.help_functions.add_content_slide(prs, title=slide['titre'], content=slide['contenu'])
                     print("[DEBUG] content slide added")
             # add the final slide at the end of the presentation
-            self.help_functions.add_final_slide(prs, title=json_data['titre'], content=json_data['conclusion'])
+            self.help_functions.add_final_slide(prs, language=language)
 
             await emitter.emit(
                 status="complete",
