@@ -388,8 +388,8 @@ class HelpFunctions:
 class Tools:
     def __init__(self):
         self.FILES_DIR = "./tmp"
-        self.API_BASE_URL = "http://localhost:8080/api/v1/files/"
-        self.template_path = "./templates/template.docx"
+        self.API_BASE_URL = "http://localhost:3000/api/v1/files/"
+        self.template_path = "./template.docx"
         os.makedirs(self.FILES_DIR, exist_ok=True)
         self.help_functions = HelpFunctions()
         self.event_emitter = EventEmitter()

@@ -165,7 +165,7 @@ class HelpFunctions:
 class Tools:
     def __init__(self):
         self.FILES_DIR = "./tmp"
-        self.API_BASE_URL = "http://localhost:8080/api/v1/files/"
+        self.API_BASE_URL = "http://localhost:3000/api/v1/files/"
         os.makedirs(self.FILES_DIR, exist_ok=True)
         self.help_functions = HelpFunctions()
         self.event_emitter = EventEmitter()
@@ -349,7 +349,7 @@ class Tools:
         user = Users.get_user_by_id(id=__user__['id'])
         print("[DEBUG] user", user)
         # upload the file to the database
-        doc = upload_file(request=__request__, file=file, user=user, file_metadata=metadata, process=False)
+        doc = upload_file(request=__request__, file=file, user=user, metadata=metadata, process=False)
         print("[DEBUG] doc", doc)
 
         # get the download link

@@ -18,7 +18,7 @@ from fastapi import UploadFile
 class Tools:
 
     def __init__(self):
-        self.API_BASE_URL = "http://localhost:8080/api/v1/files/"
+        self.API_BASE_URL = "http://localhost:3000/api/v1/files/"
         self.FILES_DIR = "./tmp"
         self.TIMEOUT = 10
 
