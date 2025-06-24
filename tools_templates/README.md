@@ -108,7 +108,6 @@ return (
 
 - Keep helper functions in a separate class or module
 - Use descriptive variable names
-- Add debug logging with `print("[DEBUG] message")`
 - Handle all exceptions and provide meaningful error messages
 - Follow Python PEP 8 style guidelines
 - Use type hints for better code readability
@@ -116,19 +115,3 @@ return (
 ## Example
 
 See `generate_pptx.py` and `generate_docx.py` for complete examples of tool implementation.
-
-## Testing Your Tool
-
-To test your tool:
-
-1. Place your tool file in the `tools` directory
-2. Restart Open WebUI or run the reload command
-3. Your tool should appear in the Tools dropdown in the chat interface
-4. Test your tool with different inputs to ensure it works correctly
-
-## Common Issues
-
-- Make sure your tool file has the correct permissions (readable by the Open WebUI process)
-- Check for syntax errors in your Python code
-- Verify that all required dependencies are installed
-- Make sure the `__init__` method doesn't have required parameters 
