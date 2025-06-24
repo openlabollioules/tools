@@ -304,9 +304,11 @@ class Tools:
     def __init__(self):
         """faire le truc avec le JSON """
         self.FILES_DIR = "./tmp"
-        self.API_BASE_URL = "http://localhost:8080/api/v1/files/"
+        self.API_BASE_URL = "http://localhost:3000/api/v1/files/"
         # templates paths
-        self.base_template_path = "./templates/"
+        self.base_template_path = "./"
+        self.fr_dir = "./"
+        self.en_dir = "./"
         
 
         self.prefix= "CS-"
@@ -372,12 +374,12 @@ class Tools:
         # Create presentation
         if language == "fr" or language == "french":
             # generating the template path french
-            template_path = self.base_template_path + "fr/" + self.prefix + "template_fr.pptx"
+            template_path = self.base_template_path + self.fr_dir + self.prefix + "template_fr.pptx"
             print("[DEBUG] french template path", template_path)
             prs = Presentation(template_path)
         else:
             # generating the template path english
-            template_path = self.base_template_path + "en/" + self.prefix + "template_en.pptx"
+            template_path = self.base_template_path + self.en_dir + self.prefix + "template_en.pptx"
             print("[DEBUG] english template path", template_path)
             prs = Presentation(template_path)
 
@@ -449,7 +451,7 @@ class Tools:
         user = Users.get_user_by_id(id=__user__['id'])
         print("[DEBUG] user", user)
         # upload the file to the database
-        doc = upload_file(request=__request__, file=file, user=user, file_metadata=metadata, process=False)
+        doc = upload_file(request=__request__, file=file, user=user, metadata=metadata, process=False)
         print("[DEBUG] doc", doc)
 
         # get the download link
