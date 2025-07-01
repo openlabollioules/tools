@@ -2,7 +2,6 @@
 title: Generate a file
 author: openlab
 version: 0.1
-license: MIT
 description: allows to generate and give a download link
 """
 

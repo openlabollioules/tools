@@ -1,5 +1,9 @@
 # OpenWebUI Document Generation Tools
 
+> **Note:**
+>
+> * Make sure to install the requirements `requirements.txt` otherwise the docx tool will not work.
+
 This project contains a collection of professional document generation tools designed for OpenWebUI. These tools enable AI chatbots to create, format, and deliver various types of office documents directly to users through OpenWebUI's file system.
 
 ## 🚀 Overview

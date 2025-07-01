@@ -2,7 +2,6 @@
 title: Generate Excel Document
 author: openlab
 version: 0.1
-license: MIT
 description: Génère un fichier Excel via un LLM (Ollama) et renvoie un lien de téléchargement
 """
 

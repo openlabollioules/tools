@@ -2,7 +2,6 @@
 title: Generate PPTX Presentation
 author: openlab
 version: 0.1
-license: MIT
 description: Génère un fichier PPTX via un LLM (Ollama) et renvoie un lien de téléchargement
 """
 
@@ -16,7 +15,7 @@ from datetime import datetime
 from pptx import Presentation
 from pptx.oxml.xmlchemy import OxmlElement
 from pptx.util import Inches
-
+from pydantic import BaseModel, Field
 from open_webui.routers.files import upload_file
 from open_webui.models.users import Users
 from fastapi import Request
@@ -301,18 +300,41 @@ class HelpFunctions:
     
 # --- Tools ---
 class Tools:
+    class Valves(BaseModel):
+        API_BASE_URL: str = Field(
+            default="http://localhost:3000/api/v1/files/", description="url for the API"
+        )        
+        FILES_DIR: str = Field(
+            default="./tmp", description="Path to the folder in which files will be saved"
+        )
+        base_template_path: str = Field(
+            default="./templates/pptx", description="Path to the folder in which the base template will be saved"
+        )
+        fr_dir: str = Field(
+            default="/fr/", description="Path to the folder in which the french template will be saved"
+        )
+        en_dir: str = Field(
+            default="/en/", description="Path to the folder in which the english template will be saved"
+        )
+        prefix: str = Field(
+            default="CS-", description="Prefix for the file name"
+        )
     def __init__(self):
-        """faire le truc avec le JSON """
-        self.FILES_DIR = "./tmp"
-        self.API_BASE_URL = "http://localhost:3000/api/v1/files/"
+        self.valves = self.Valves()
+        self.FILES_DIR = self.valves.FILES_DIR
+        self.API_BASE_URL = self.valves.API_BASE_URL
         # templates paths
-        self.base_template_path = "./"
-        self.fr_dir = "./"
-        self.en_dir = "./"
+        self.base_template_path = self.valves.base_template_path
+        self.fr_dir = self.valves.fr_dir
+        self.en_dir = self.valves.en_dir
+        self.prefix= self.valves.prefix
         
-
-        self.prefix= "CS-"
+        # for easier setup of the templates folders
         os.makedirs(self.FILES_DIR, exist_ok=True)
+        os.makedirs(self.base_template_path, exist_ok=True)
+        os.makedirs(self.base_template_path + self.fr_dir, exist_ok=True)
+        os.makedirs(self.base_template_path + self.en_dir, exist_ok=True)
+        
         self.help_functions = HelpFunctions()
         self.event_emitter = EventEmitter()
     
@@ -364,12 +386,13 @@ class Tools:
         print("[DEBUG] json_formatted", json_data)
         print("[DEBUG] language", language)
         print("[DEBUG] confidentiality", confidentiality)
+        # set the prefix for the file name
         if confidentiality == "public":
             self.prefix = "CS-PU-"
-        elif confidentiality == "internal":
-            self.prefix = "CS-IN-"
-        else:
+        elif confidentiality == "confidential":
             self.prefix = "CS-CO-"
+        else:
+            self.prefix = "CS-IN-"
 
         # Create presentation
         if language == "fr" or language == "french":

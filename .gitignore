@@ -1,0 +1,6 @@
+/templates
+.venv
+/tmp
+.DS_Store
+.webui_secret_key
+/__pycache__
